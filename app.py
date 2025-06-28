@@ -40,10 +40,21 @@ db = SQLAlchemy(app)
 # Download NLTK data
 try:
     nltk.data.find('tokenizers/punkt')
-    nltk.data.find('vader_lexicon')
 except LookupError:
     nltk.download('punkt')
+
+try:
+    nltk.data.find('sentiment/vader_lexicon')
+except LookupError:
     nltk.download('vader_lexicon')
+
+# Optional speech recognition import
+try:
+    import speech_recognition as sr
+    SPEECH_RECOGNITION_AVAILABLE = True
+except ImportError:
+    SPEECH_RECOGNITION_AVAILABLE = False
+    print("⚠️  Speech recognition not available. Voice features will be disabled.")
 
 # Import VADER sentiment analyzer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -147,6 +158,9 @@ def calculate_reading_time(text):
 
 def process_voice_audio(audio_data):
     """Process voice input using speech recognition"""
+    if not SPEECH_RECOGNITION_AVAILABLE:
+        return "Speech recognition is not available in this environment. Please type your entry instead."
+    
     try:
         # Decode base64 audio data
         audio_bytes = base64.b64decode(audio_data.split(',')[1])
