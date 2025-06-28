@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Journal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-home text-primary me-2"></i>Welcome back, {{ current_user.username }}!
+            </h1>
+            <a href="{{ url_for('new_entry') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>New Entry
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Total Entries</h5>
+                        <h2 class="mb-0">{{ entries|length }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">This Month</h5>
+                        <h2 class="mb-0">{{ entries|selectattr('date_created', '>=', moment().startOf('month'))|list|length }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Voice Entries</h5>
+                        <h2 class="mb-0">0</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-microphone fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Recent Entries
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if entries %}
+                    <div class="row g-3">
+                        {% for entry in entries %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="entry-card card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">{{ entry.title }}</h6>
+                                        <span class="badge bg-{{ 'success' if entry.sentiment_label == 'positive' else 'danger' if entry.sentiment_label == 'negative' else 'secondary' }}">
+                                            {{ entry.sentiment_label }}
+                                        </span>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        {{ entry.content[:100] }}{% if entry.content|length > 100 %}...{% endif %}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ entry.date_created.strftime('%b %d, %Y') }}
+                                        </small>
+                                        <a href="{{ url_for('view_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No entries yet</h5>
+                        <p class="text-muted">Start your journaling journey by creating your first entry!</p>
+                        <a href="{{ url_for('new_entry') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create First Entry
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('voice_input') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-microphone me-2"></i>Voice Input
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('search') }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-search me-2"></i>Search Entries
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('analytics') }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-chart-line me-2"></i>Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('new_entry') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-edit me-2"></i>Write Entry
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

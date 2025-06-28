@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Search Entries - AI Journal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-search text-primary me-2"></i>Search Journal Entries
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="q" class="form-label">Search Keywords</label>
+                        <input type="text" class="form-control" id="q" name="q" value="{{ query }}" placeholder="Search in title and content...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="emotion" class="form-label">Emotion Filter</label>
+                        <select class="form-select" id="emotion" name="emotion">
+                            <option value="">All Emotions</option>
+                            <option value="positive" {{ 'selected' if emotion == 'positive' }}>Positive</option>
+                            <option value="negative" {{ 'selected' if emotion == 'negative' }}>Negative</option>
+                            <option value="neutral" {{ 'selected' if emotion == 'neutral' }}>Neutral</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date" class="form-label">Date Filter</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ date_filter }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Search Results
+                    {% if query or emotion or date_filter %}
+                    <span class="badge bg-primary ms-2">{{ entries|length }} entries found</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if entries %}
+                    <div class="row g-3">
+                        {% for entry in entries %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="entry-card card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">{{ entry.title }}</h6>
+                                        <span class="badge bg-{{ 'success' if entry.sentiment_label == 'positive' else 'danger' if entry.sentiment_label == 'negative' else 'secondary' }}">
+                                            {{ entry.sentiment_label }}
+                                        </span>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        {{ entry.content[:100] }}{% if entry.content|length > 100 %}...{% endif %}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ entry.date_created.strftime('%b %d, %Y') }}
+                                        </small>
+                                        <a href="{{ url_for('view_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        {% if query or emotion or date_filter %}
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No entries found</h5>
+                            <p class="text-muted">Try adjusting your search criteria.</p>
+                        {% else %}
+                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No entries yet</h5>
+                            <p class="text-muted">Start by creating your first journal entry!</p>
+                            <a href="{{ url_for('new_entry') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Entry
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

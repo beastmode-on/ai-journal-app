@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - AI Journal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2 mb-0">
+            <i class="fas fa-chart-bar text-primary me-2"></i>Journal Analytics
+        </h1>
+        <p class="text-muted">Insights into your journaling patterns and emotional trends</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Total Entries</h5>
+                        <h2 class="mb-0">{{ total_entries }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Positive Entries</h5>
+                        <h2 class="mb-0">{{ sentiment_counts.get('positive', 0) }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-smile fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Negative Entries</h5>
+                        <h2 class="mb-0">{{ sentiment_counts.get('negative', 0) }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-frown fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Neutral Entries</h5>
+                        <h2 class="mb-0">{{ sentiment_counts.get('neutral', 0) }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-meh fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-pie-chart text-primary me-2"></i>Sentiment Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if sentiment_counts %}
+                    <canvas id="sentimentChart" width="400" height="200"></canvas>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No data available for sentiment analysis</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar text-success me-2"></i>Monthly Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if monthly_activity %}
+                    <canvas id="activityChart" width="400" height="200"></canvas>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No activity data available</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>Journaling Insights
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="insight-card p-3 bg-light rounded">
+                            <h6><i class="fas fa-calendar-check text-success me-2"></i>Most Active Month</h6>
+                            {% if monthly_activity %}
+                                {% set most_active = monthly_activity.items()|sort(attribute='1', reverse=true)|first %}
+                                <p class="mb-0">{{ most_active[0] }} with {{ most_active[1] }} entries</p>
+                            {% else %}
+                                <p class="mb-0 text-muted">Not enough data</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="insight-card p-3 bg-light rounded">
+                            <h6><i class="fas fa-heart text-danger me-2"></i>Dominant Emotion</h6>
+                            {% if sentiment_counts %}
+                                {% set dominant = sentiment_counts.items()|sort(attribute='1', reverse=true)|first %}
+                                <p class="mb-0">{{ dominant[0].title() }} entries ({{ dominant[1] }})</p>
+                            {% else %}
+                                <p class="mb-0 text-muted">Not enough data</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="insight-card p-3 bg-light rounded">
+                            <h6><i class="fas fa-trending-up text-info me-2"></i>Journaling Streak</h6>
+                            <p class="mb-0">Track your consistency over time</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="insight-card p-3 bg-light rounded">
+                            <h6><i class="fas fa-magic text-warning me-2"></i>AI Analysis</h6>
+                            <p class="mb-0">All entries analyzed for sentiment and tagged</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sentiment Chart
+    {% if sentiment_counts %}
+    const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+    new Chart(sentimentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive', 'Negative', 'Neutral'],
+            datasets: [{
+                data: [
+                    {{ sentiment_counts.get('positive', 0) }},
+                    {{ sentiment_counts.get('negative', 0) }},
+                    {{ sentiment_counts.get('neutral', 0) }}
+                ],
+                backgroundColor: ['#28a745', '#dc3545', '#6c757d'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+    
+    // Activity Chart
+    {% if monthly_activity %}
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for month, count in monthly_activity.items() %}'{{ month }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Entries',
+                data: [{% for month, count in monthly_activity.items() %}{{ count }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: '#007bff',
+                borderColor: '#0056b3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,22 @@
+# AI Journal Application Environment Variables
+
+# Flask Configuration
+SECRET_KEY=your-secret-key-here-change-this-in-production
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Database Configuration
+DATABASE_URL=sqlite:///journal.db
+
+# OpenAI API Configuration (for AI features)
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Optional: Speech Recognition Configuration
+# SPEECH_RECOGNITION_LANGUAGE=en-US
+
+# Optional: Email Configuration (for future features)
+# MAIL_SERVER=smtp.gmail.com
+# MAIL_PORT=587
+# MAIL_USE_TLS=True
+# MAIL_USERNAME=your-email@gmail.com
+# MAIL_PASSWORD=your-app-password 

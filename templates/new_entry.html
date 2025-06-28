@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}New Entry - AI Journal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-edit text-primary me-2"></i>New Journal Entry
+                </h3>
+                <p class="text-muted mb-0">Write your thoughts and let AI analyze your entry</p>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required maxlength="200" placeholder="Give your entry a meaningful title">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required placeholder="Write your thoughts, feelings, and experiences here..."></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-magic me-1"></i>
+                            AI will automatically analyze sentiment, generate a summary, and create tags for your entry.
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save me-2"></i>Save Entry
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>AI Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="feature-info">
+                            <h6><i class="fas fa-heart text-danger me-2"></i>Sentiment Analysis</h6>
+                            <p class="text-muted small">Automatically detects if your entry is positive, negative, or neutral.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-info">
+                            <h6><i class="fas fa-compress-alt text-info me-2"></i>Smart Summary</h6>
+                            <p class="text-muted small">Generates a concise summary of your entry using AI.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-info">
+                            <h6><i class="fas fa-tags text-warning me-2"></i>Auto Tagging</h6>
+                            <p class="text-muted small">Creates relevant tags based on your entry content.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-info">
+                            <h6><i class="fas fa-search text-success me-2"></i>Smart Search</h6>
+                            <p class="text-muted small">Search your entries by emotion, keywords, or date.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

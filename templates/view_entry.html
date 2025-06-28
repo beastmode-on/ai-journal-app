@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}{{ entry.title }} - AI Journal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">{{ entry.title }}</h2>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ entry.date_created.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="badge bg-{{ 'success' if entry.sentiment_label == 'positive' else 'danger' if entry.sentiment_label == 'negative' else 'secondary' }} fs-6">
+                            <i class="fas fa-heart me-1"></i>{{ entry.sentiment_label.title() }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="entry-content mb-4">
+                    <h5>Content:</h5>
+                    <div class="content-text p-3 bg-light rounded">
+                        {{ entry.content|nl2br }}
+                    </div>
+                </div>
+                
+                {% if entry.summary %}
+                <div class="summary-section mb-4">
+                    <h5><i class="fas fa-compress-alt text-info me-2"></i>AI Summary:</h5>
+                    <div class="summary-text p-3 bg-info bg-opacity-10 rounded">
+                        {{ entry.summary }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if tags %}
+                <div class="tags-section mb-4">
+                    <h5><i class="fas fa-tags text-warning me-2"></i>Tags:</h5>
+                    <div class="tags-container">
+                        {% for tag in tags %}
+                        <span class="badge bg-warning text-dark me-2 mb-2">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="sentiment-details">
+                    <h5><i class="fas fa-chart-line text-primary me-2"></i>Sentiment Analysis:</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="sentiment-score p-3 bg-light rounded">
+                                <strong>Sentiment Score:</strong> {{ "%.2f"|format(entry.sentiment_score) }}
+                                <div class="progress mt-2">
+                                    <div class="progress-bar bg-{{ 'success' if entry.sentiment_score > 0 else 'danger' if entry.sentiment_score < 0 else 'secondary' }}" 
+                                         style="width: {{ (entry.sentiment_score + 1) * 50 }}%"></div>
+                                </div>
+                                <small class="text-muted">Range: -1 (very negative) to +1 (very positive)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="sentiment-label p-3 bg-light rounded">
+                                <strong>Overall Mood:</strong> 
+                                <span class="badge bg-{{ 'success' if entry.sentiment_label == 'positive' else 'danger' if entry.sentiment_label == 'negative' else 'secondary' }}">
+                                    {{ entry.sentiment_label.title() }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog text-primary me-2"></i>Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('new_entry') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Entry
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-info">
+                        <i class="fas fa-search me-2"></i>Search Entries
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-info me-2"></i>Entry Info
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="info-item mb-3">
+                    <strong>Word Count:</strong>
+                    <span class="badge bg-secondary">{{ entry.content.split()|length }}</span>
+                </div>
+                <div class="info-item mb-3">
+                    <strong>Character Count:</strong>
+                    <span class="badge bg-secondary">{{ entry.content|length }}</span>
+                </div>
+                <div class="info-item mb-3">
+                    <strong>Reading Time:</strong>
+                    <span class="badge bg-secondary">{{ (entry.content.split()|length / 200)|round(1) }} min</span>
+                </div>
+                <div class="info-item">
+                    <strong>Tags Count:</strong>
+                    <span class="badge bg-secondary">{{ tags|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

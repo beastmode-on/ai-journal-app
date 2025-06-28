@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Voice Input - AI Journal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-microphone text-success me-2"></i>Voice Input
+                </h3>
+                <p class="text-muted mb-0">Speak your thoughts and let AI convert them to text</p>
+            </div>
+            <div class="card-body">
+                <div class="voice-controls text-center mb-4">
+                    <button id="startRecording" class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-microphone me-2"></i>Start Recording
+                    </button>
+                    <button id="stopRecording" class="btn btn-danger btn-lg" style="display: none;">
+                        <i class="fas fa-stop me-2"></i>Stop Recording
+                    </button>
+                </div>
+                
+                <div class="recording-status text-center mb-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Recording...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Recording... Speak clearly into your microphone</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="voiceText" class="form-label">Transcribed Text:</label>
+                    <textarea class="form-control" id="voiceText" rows="8" placeholder="Your voice will be transcribed here..."></textarea>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <button id="clearText" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-eraser me-2"></i>Clear Text
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="createEntry" class="btn btn-primary w-100" disabled>
+                            <i class="fas fa-save me-2"></i>Create Entry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-info me-2"></i>Voice Input Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-microphone text-success me-2"></i>Recording Tips:</h6>
+                        <ul class="text-muted small">
+                            <li>Speak clearly and at a normal pace</li>
+                            <li>Use a quiet environment</li>
+                            <li>Keep your microphone close</li>
+                            <li>Pause briefly between sentences</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-magic text-warning me-2"></i>AI Features:</h6>
+                        <ul class="text-muted small">
+                            <li>Automatic sentiment analysis</li>
+                            <li>Smart summary generation</li>
+                            <li>Intelligent tag creation</li>
+                            <li>Searchable content</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for creating entry -->
+<form id="entryForm" method="POST" action="{{ url_for('new_entry') }}" style="display: none;">
+    <input type="hidden" name="title" id="entryTitle">
+    <input type="hidden" name="content" id="entryContent">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('startRecording');
+    const stopBtn = document.getElementById('stopRecording');
+    const recordingStatus = document.querySelector('.recording-status');
+    const voiceText = document.getElementById('voiceText');
+    const clearBtn = document.getElementById('clearText');
+    const createBtn = document.getElementById('createEntry');
+    
+    let mediaRecorder;
+    let audioChunks = [];
+    
+    startBtn.addEventListener('click', startRecording);
+    stopBtn.addEventListener('click', stopRecording);
+    clearBtn.addEventListener('click', clearText);
+    createBtn.addEventListener('click', createEntry);
+    voiceText.addEventListener('input', updateCreateButton);
+    
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    sendAudioToServer(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+                recordingStatus.style.display = 'block';
+            })
+            .catch(err => {
+                console.error('Error accessing microphone:', err);
+                alert('Error accessing microphone. Please check permissions.');
+            });
+    }
+    
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+        
+        startBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'none';
+        recordingStatus.style.display = 'none';
+    }
+    
+    function sendAudioToServer(audioBlob) {
+        const formData = new FormData();
+        formData.append('audio', audioBlob);
+        
+        fetch('/process_voice', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                voiceText.value = data.text;
+                updateCreateButton();
+            } else {
+                alert('Error processing voice: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error processing voice input.');
+        });
+    }
+    
+    function clearText() {
+        voiceText.value = '';
+        updateCreateButton();
+    }
+    
+    function updateCreateButton() {
+        createBtn.disabled = voiceText.value.trim().length === 0;
+    }
+    
+    function createEntry() {
+        const content = voiceText.value.trim();
+        if (content) {
+            // Auto-generate title from first sentence
+            const firstSentence = content.split('.')[0];
+            const title = firstSentence.length > 50 ? firstSentence.substring(0, 50) + '...' : firstSentence;
+            
+            document.getElementById('entryTitle').value = title;
+            document.getElementById('entryContent').value = content;
+            document.getElementById('entryForm').submit();
+        }
+    }
+});
+</script>
+{% endblock %} 
