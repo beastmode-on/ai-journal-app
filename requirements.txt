@@ -9,4 +9,5 @@ SpeechRecognition==3.10.0
 python-dotenv==1.0.0
 wtforms==3.0.1
 email-validator==2.0.0
-python-dateutil==2.8.2 
+python-dateutil==2.8.2
+gunicorn==21.2.0 
