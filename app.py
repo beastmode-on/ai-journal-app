@@ -22,8 +22,18 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///journal.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize OpenAI
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Initialize OpenAI client (optional - app works without it)
+client = None
+try:
+    api_key = os.getenv('OPENAI_API_KEY')
+    if api_key and api_key != 'your-openai-api-key-here':
+        client = OpenAI(api_key=api_key)
+    else:
+        print("⚠️  OpenAI API key not found. AI features will be disabled.")
+        print("   Set OPENAI_API_KEY environment variable to enable AI features.")
+except Exception as e:
+    print(f"⚠️  Could not initialize OpenAI client: {e}")
+    print("   AI features will be disabled.")
 
 db = SQLAlchemy(app)
 
@@ -349,5 +359,5 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"Database initialization error: {e}")
     
-    port = int(os.environ.get('PORT', 8080))
+    port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port, debug=False) 
