@@ -5,76 +5,112 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="card shadow">
-            <div class="card-header">
-                <h3 class="mb-0">
-                    <i class="fas fa-search text-primary me-2"></i>Search Journal Entries
-                </h3>
-            </div>
-            <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="q" class="form-label">Search Keywords</label>
-                        <input type="text" class="form-control" id="q" name="q" value="{{ query }}" placeholder="Search in title and content...">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="emotion" class="form-label">Emotion Filter</label>
-                        <select class="form-select" id="emotion" name="emotion">
-                            <option value="">All Emotions</option>
-                            <option value="positive" {{ 'selected' if emotion == 'positive' }}>Positive</option>
-                            <option value="negative" {{ 'selected' if emotion == 'negative' }}>Negative</option>
-                            <option value="neutral" {{ 'selected' if emotion == 'neutral' }}>Neutral</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="date" class="form-label">Date Filter</label>
-                        <input type="date" class="form-control" id="date" name="date" value="{{ date_filter }}">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i>Search
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-search text-info me-2"></i>Search Journal Entries
+            </h1>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card shadow">
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>Search & Filter
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('search') }}" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="q" class="form-label">Search Text</label>
+                        <input type="text" class="form-control" id="q" name="q" value="{{ query }}" placeholder="Search in titles and content...">
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="emotion" class="form-label">Emotion</label>
+                        <select class="form-select" id="emotion" name="emotion">
+                            <option value="">All Emotions</option>
+                            <option value="positive" {% if emotion == 'positive' %}selected{% endif %}>Positive</option>
+                            <option value="slightly_positive" {% if emotion == 'slightly_positive' %}selected{% endif %}>Slightly Positive</option>
+                            <option value="neutral" {% if emotion == 'neutral' %}selected{% endif %}>Neutral</option>
+                            <option value="slightly_negative" {% if emotion == 'slightly_negative' %}selected{% endif %}>Slightly Negative</option>
+                            <option value="negative" {% if emotion == 'negative' %}selected{% endif %}>Negative</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ date_filter }}">
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label for="tag" class="form-label">Tag</label>
+                        <select class="form-select" id="tag" name="tag">
+                            <option value="">All Tags</option>
+                            {% for tag in all_tags %}
+                            <option value="{{ tag }}" {% if tag_filter == tag %}selected{% endif %}>{{ tag }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                        <a href="{{ url_for('search') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-list me-2"></i>Search Results
-                    {% if query or emotion or date_filter %}
                     <span class="badge bg-primary ms-2">{{ entries|length }} entries found</span>
-                    {% endif %}
                 </h5>
             </div>
             <div class="card-body">
                 {% if entries %}
-                    <div class="row g-3">
+                    <div class="row g-4">
                         {% for entry in entries %}
                         <div class="col-md-6 col-lg-4">
                             <div class="entry-card card h-100">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <h6 class="card-title mb-0">{{ entry.title }}</h6>
-                                        <span class="badge bg-{{ 'success' if entry.sentiment_label == 'positive' else 'danger' if entry.sentiment_label == 'negative' else 'secondary' }}">
-                                            {{ entry.sentiment_label }}
+                                        <span class="badge bg-{{ 'success' if entry.sentiment_label == 'positive' else 'warning' if entry.sentiment_label == 'slightly_positive' else 'secondary' if entry.sentiment_label == 'neutral' else 'info' if entry.sentiment_label == 'slightly_negative' else 'danger' }}">
+                                            {{ entry.sentiment_label.replace('_', ' ').title() }}
                                         </span>
                                     </div>
+                                    
                                     <p class="card-text text-muted small">
-                                        {{ entry.content[:100] }}{% if entry.content|length > 100 %}...{% endif %}
+                                        {{ entry.content[:120] }}{% if entry.content|length > 120 %}...{% endif %}
                                     </p>
+                                    
+                                    {% if entry.tags %}
+                                    <div class="mb-2">
+                                        {% for tag in entry.tags|from_json %}
+                                        <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="text-muted">
                                             <i class="fas fa-calendar me-1"></i>
                                             {{ entry.date_created.strftime('%b %d, %Y') }}
+                                            {% if entry.word_count %}
+                                            <br><i class="fas fa-clock me-1"></i>
+                                            {{ entry.reading_time }} min read
+                                            {% endif %}
                                         </small>
                                         <a href="{{ url_for('view_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye me-1"></i>View
@@ -87,22 +123,56 @@
                     </div>
                 {% else %}
                     <div class="text-center py-5">
-                        {% if query or emotion or date_filter %}
-                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No entries found</h5>
-                            <p class="text-muted">Try adjusting your search criteria.</p>
-                        {% else %}
-                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No entries yet</h5>
-                            <p class="text-muted">Start by creating your first journal entry!</p>
-                            <a href="{{ url_for('new_entry') }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Create Entry
-                            </a>
-                        {% endif %}
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No entries found</h5>
+                        <p class="text-muted">
+                            {% if query or emotion or date_filter or tag_filter %}
+                                Try adjusting your search criteria or 
+                                <a href="{{ url_for('search') }}">clear all filters</a>
+                            {% else %}
+                                No journal entries yet. 
+                                <a href="{{ url_for('new_entry') }}">Create your first entry</a>
+                            {% endif %}
+                        </p>
                     </div>
                 {% endif %}
             </div>
         </div>
+
+        {% if all_tags %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>Popular Tags
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for tag in all_tags[:20] %}
+                    <a href="{{ url_for('search', tag=tag) }}" class="badge bg-light text-dark text-decoration-none">
+                        {{ tag }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
+
+<script>
+// Auto-submit form when filters change
+document.querySelectorAll('#emotion, #date, #tag').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+
+// Add loading state to search button
+document.querySelector('form').addEventListener('submit', function() {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+    submitBtn.disabled = true;
+});
+</script>
 {% endblock %} 
