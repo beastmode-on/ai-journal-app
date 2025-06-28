@@ -8,7 +8,6 @@ from textblob import TextBlob
 import nltk
 from openai import OpenAI
 from dotenv import load_dotenv
-import speech_recognition as sr
 from wtforms import Form, StringField, TextAreaField, validators
 import uuid
 import base64
