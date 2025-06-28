@@ -364,6 +364,24 @@ def from_json(value):
             return []
     return []
 
+# Initialize database tables
+with app.app_context():
+    try:
+        db.create_all()
+        print("Database initialized successfully!")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+
+@app.route('/init-db')
+def init_db():
+    """Initialize database tables"""
+    try:
+        with app.app_context():
+            db.create_all()
+        return "Database initialized successfully!"
+    except Exception as e:
+        return f"Database initialization error: {e}"
+
 if __name__ == '__main__':
     try:
         with app.app_context():
